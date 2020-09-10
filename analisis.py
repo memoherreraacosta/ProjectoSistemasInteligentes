@@ -7,12 +7,17 @@ from glob import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
+CHANNEL = 2
+COLOR = "blue" if CHANNEL==1 else "red"
+
 # Read data file
+
 files = glob("data/*")
 data = np.loadtxt(files[0])
 
 win_size = 256
-samp_rate = 128
+samp_rate = 256
+
 samps = data.shape[0]
 n_channels = data.shape[1]
 
@@ -27,7 +32,7 @@ time = data[:, 0]
 # Data channels
 chann1 = data[:, 1]
 chann2 = data[:, 3]
-
+channel = chann1 if CHANNEL==1 else chann2
 # Mark data
 mark = data[:, 6]
 
@@ -61,10 +66,10 @@ for key in training_samples:
     # Power Spectral Density (PSD) (1 second of training data)
     ini_samp = training_samples[key][2][0]
     end_samp = ini_samp + win_size
-    x = chann1[ini_samp : end_samp]
+    x = channel[ini_samp : end_samp]
     t = time[ini_samp : end_samp]
 
-    plt.plot(t, x)
+    plt.plot(t, x, color = COLOR)
     plt.xlabel('Tiempo (s)')
     plt.ylabel('Micro V')
     plt.show()
@@ -82,7 +87,7 @@ for key in training_samples:
     start_index = np.where(freq >= 4.0)[0][0]
     end_index = np.where(freq >= 60.0)[0][0]
 
-    plt.plot(freq[start_index:end_index], power[start_index:end_index])
+    plt.plot(freq[start_index:end_index], power[start_index:end_index], color = COLOR)
     plt.xlabel('Hz')
     plt.ylabel('Power')
     plt.show()
@@ -96,7 +101,7 @@ for samples in training_samples.values():
         for i in range(sample[0], sample[1] if sample[1]%win_size==0 else sample[1]-win_size, win_size):
             ini_samp = i
             end_samp = i + win_size
-            x = chann1[ini_samp : end_samp]
+            x = channel[ini_samp : end_samp]
 
             power, freq = plt.psd(x, NFFT = win_size, Fs = samp_rate)
             powers.append(power)
@@ -113,8 +118,7 @@ for samples in training_samples.values():
         ]
         avg_power.append(sum(avg_pos)/len(avg_pos))
 
-    print(len(avg_power), len(avg_freq))
-    plt.plot(avg_freq[start_index:end_index], avg_power[start_index:end_index])
+    plt.plot(avg_freq[start_index:end_index], avg_power[start_index:end_index], color = COLOR)
     plt.xlabel('Hz')
     plt.ylabel('Avg Power')
     plt.show()
