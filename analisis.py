@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 files = glob("data/*")
 data = np.loadtxt(files[0])
 
-win_size = samp_rate = 256
+win_size = 256
+samp_rate = 128
 samps = data.shape[0]
 n_channels = data.shape[1]
 
