@@ -91,7 +91,6 @@ for samples in training_samples.values():
     powers = []
     avg_power = []
     avg_freq = []
-
     for sample in samples:
         for i in range(sample[0], sample[1] if sample[1]%win_size==0 else sample[1]-win_size, win_size):
             ini_samp = i
