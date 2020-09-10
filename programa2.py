@@ -1,97 +1,69 @@
 #------------------------------------------------------------------------------------------------------------------
-#   Program that simulates the acquisition and transmision of EMG data.
+#   Sample program for data acquisition and recording.
 #------------------------------------------------------------------------------------------------------------------
-import numpy as np
-import socket
 import time
-import struct
+import socket
+import numpy as np
 import matplotlib.pyplot as plt
+import math
 
-
-# EMG data
+# Data configuration
+n_channels = 5
+win_size = 256
 samp_rate = 256
-
-data = np.loadtxt("Izquierda, derecha, cerrado.txt") 
-mark = data[:, data.shape[1]-1]
-samps = data.shape[0]
-
-data = np.delete(data, data.shape[1]-1, 1)
-data = np.delete(data, 0, 1)
-n_channels = data.shape[1]
+emg_data = [[] for i in range(n_channels)]
+samp_count = 0
 
 # Socket configuration
 UDP_IP = '127.0.0.1'
 UDP_PORT = 8000
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind((UDP_IP, UDP_PORT))
+sock.settimeout(0.01)
 
-# Send data
-start_index = 0
-end_index = 0
+# Data acquisition
 start_time = time.time()
 
+fig, axs = plt.subplots(2)
 
-# Tracker
-count = 0
-
-# Time Channel
-ch_time = data[:, 0]
 while True:
+    try:
+        data, addr = sock.recvfrom(1024*1024)                        
+            
+        values = np.frombuffer(data)
+        ns = int(len(values)/n_channels)
+        samp_count += ns      
 
-    # Calculate elapsed time and current data index
-    time.sleep(0.1)
-    elapsed_time = time.time() - start_time
-
-    start_index = end_index
-    end_index = int(samp_rate*elapsed_time)
-
-    index = start_index % samps;
-    ns = end_index - start_index
-
-    # Send data for the calculated range
-    if (ns > 0):
-
-        # Build data package
-        out_data = []
         for i in range(ns):
             for j in range(n_channels):
-                out_data.append(data[index][j])                
-                index+=1
-                index %= samps
+                emg_data[j].append(values[n_channels*i + j])
 
-            if (mark[index] != 0):
-                print('--------------- Marca:', int(mark[index]), '---------------')
+        elapsed_time = time.time() - start_time
+        if (elapsed_time > 0.1):
+            start_time = time.time()
+            print ("Muestras: ", ns)
+            print ("Cuenta: ", samp_count)
+            print ("Última lectura: ", [row[samp_count-1] for row in emg_data])
+            print("")
 
-        pack_string = '<' + str(n_channels*ns) + 'd'
-        bin_data = struct.pack(pack_string, *out_data)
+            axs[0].plot(elapsed_time, values[1])
+            axs[1].plot(elapsed_time, values[3])
+            plt.xlabel("Tiempo (s)")
+            plt.ylabel("microvolts")
+            plt.pause(0.05)
+            #x = values[3]
+        '''
+        f = [2*math.cos((2*math.pi/samp_rate)*(5) * x) + 4*math.sin((2*math.pi/samp_rate)*(40) * x) for x in range(win_size)]
+        power, freq = plt.psd(f, NFFT = win_size, Fs = samp_rate)
+        plt.clf()
+        start_index = np.where(freq >= 4.0)[0][0]
+        end_index = np.where(freq >= 60.0)[0][0]
 
-        # Send data
-        sock.sendto(bin_data, (UDP_IP, UDP_PORT))
-        plt.plot(elapsed_time,ns)
-        plt.xlabel('Time (s)')
-        plt.ylabel('Microvolts')
-        plt.ylim(-100,100)
-        # plt.pause(0.05)
-
-    print("Muestras enviadas:", ns)
-    count += ns
-    print("Count:",count)
-    print("Elapsed Time", elapsed_time)
-
-
+        plt.plot(freq[start_index:end_index], power[start_index:end_index])
+        plt.xlabel('Hz')
+        plt.ylabel('Power')   
+        '''
+    except socket.timeout:
+        pass  
 
 plt.show()
-
-# fig=plt.figure() 
-# plt.axis([0,1000,0,1]) 
-
-# i=0 
-# x=list() 
-# y=list() 
-
-# while True:
-#     temp_y=np.random.random() 
-#     x.append(i) 
-#     y.append(temp_y) 
-#     plt.plot(x,y) 
-#     i+=1 
-#     plt.show() 
