@@ -90,7 +90,7 @@ for key, values in training_samples.items():
     avg_freq = []
     win_size = 256
     for sample in values:
-        for i in range(sample[0], sample[1], win_size):
+        for i in range(sample[0], sample[1] if sample[1]%win_size==0 else sample[1]-win_size, win_size):
             ini_samp = i
             end_samp = i + win_size
             x = chann1[ini_samp : end_samp]
@@ -108,7 +108,6 @@ for key, values in training_samples.items():
         for sample in powers:
             avg_pos.append(sample[pos])
         avg_power.append(sum(avg_pos)/len(avg_pos))
-    print(len(avg_power), len(avg_freq))
     plt.plot(avg_freq[start_index:end_index], avg_power[start_index:end_index])
     plt.xlabel('Hz')
     plt.ylabel('Avg Power')
