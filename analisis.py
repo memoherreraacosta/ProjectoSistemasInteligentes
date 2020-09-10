@@ -2,12 +2,16 @@
 #   Sample program for EMG data loading and manipulation.
 #------------------------------------------------------------------------------------------------------------------
 
+from glob import glob
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Read data file
-data = np.loadtxt("Abierto, cerrado.txt")
-samp_rate = 256
+files = glob("data/*")
+data = np.loadtxt(files[0])
+
+win_size = samp_rate = 256
 samps = data.shape[0]
 n_channels = data.shape[1]
 
@@ -27,7 +31,7 @@ chann2 = data[:, 3]
 mark = data[:, 6]
 
 training_samples = {}
-for i in range(0, samps):
+for i in range(samps):
     if mark[i] > 0:
         print("Marca", mark[i], 'Muestra', i, 'Tiempo', time[i])
 
@@ -43,7 +47,6 @@ print('Rango de muestras con datos de entrenamiento:', training_samples)
 
 for key in training_samples:
     # Plot data
-
     start_samp = training_samples[key][2][0];
     end_samp = training_samples[key][2][1];
 
@@ -54,10 +57,7 @@ for key in training_samples:
     plt.legend()
     plt.show()
 
-
     # Power Spectral Density (PSD) (1 second of training data)
-
-    win_size = 256
     ini_samp = training_samples[key][2][0]
     end_samp = ini_samp + win_size
     x = chann1[ini_samp : end_samp]
@@ -65,16 +65,19 @@ for key in training_samples:
 
     plt.plot(t, x)
     plt.xlabel('Tiempo (s)')
-    plt.ylabel('micro V')
+    plt.ylabel('Micro V')
     plt.show()
 
     power, freq = plt.psd(x, NFFT = win_size, Fs = samp_rate)
     plt.clf()
 
+    """
     start_freq = next(x for x, val in enumerate(freq) if val >= 4.0);
     end_freq = next(x for x, val in enumerate(freq) if val >= 60.0);
     print(start_freq, end_freq)
-
+    
+    Same implementation as 'np.where()'
+    """
     start_index = np.where(freq >= 4.0)[0][0]
     end_index = np.where(freq >= 60.0)[0][0]
 
@@ -84,12 +87,11 @@ for key in training_samples:
     plt.show()
 
 
-for key, values in training_samples.items():
+for samples in training_samples.values():
     powers = []
     avg_power = []
     avg_freq = []
-    win_size = 256
-    for sample in values:
+    for sample in samples:
         for i in range(sample[0], sample[1], win_size):
             ini_samp = i
             end_samp = i + win_size
@@ -103,11 +105,13 @@ for key, values in training_samples.items():
     start_index = np.where(avg_freq >= 4.0)[0][0]
     end_index = np.where(avg_freq >= 60.0)[0][0]
 
-    for pos in range(len(avg_freq)):
-        avg_pos = []
-        for sample in powers:
-            avg_pos.append(sample[pos])
+    for idx in range(len(avg_freq)):
+        avg_pos = [
+            sample[idx]
+            for sample in powers
+        ]
         avg_power.append(sum(avg_pos)/len(avg_pos))
+
     print(len(avg_power), len(avg_freq))
     plt.plot(avg_freq[start_index:end_index], avg_power[start_index:end_index])
     plt.xlabel('Hz')
