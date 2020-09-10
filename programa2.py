@@ -46,11 +46,11 @@ while True:
             print ("Última lectura: ", [row[samp_count-1] for row in emg_data])
             print("")
 
-            axs[0].plot(elapsed_time, values[1])
-            axs[1].plot(elapsed_time, values[3])
-            plt.xlabel("Tiempo (s)")
-            plt.ylabel("microvolts")
-            plt.pause(0.05)
+        axs[0].plot(elapsed_time, values[1])
+        axs[1].plot(elapsed_time, values[3])
+        plt.xlabel("Tiempo (s)")
+        plt.ylabel("microvolts")
+        plt.pause(0.05)
             #x = values[3]
         '''
         f = [2*math.cos((2*math.pi/samp_rate)*(5) * x) + 4*math.sin((2*math.pi/samp_rate)*(40) * x) for x in range(win_size)]
