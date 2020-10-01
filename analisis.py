@@ -24,7 +24,6 @@ n_channels = data.shape[1]
 print('Número de muestras: ', data.shape[0])
 print('Número de canales: ', data.shape[1])
 print('Duración del registro: ', samps / samp_rate, 'segundos')
-print(data);
 
 # Time channel
 time = data[:, 0]
@@ -39,7 +38,7 @@ mark = data[:, 6]
 training_samples = {}
 for i in range(samps):
     if mark[i] > 0:
-        print("Marca", mark[i], 'Muestra', i, 'Tiempo', time[i])
+        # print("Marca", mark[i], 'Muestra', i, 'Tiempo', time[i])
 
         if  (mark[i] > 100) and (mark[i] < 200):
             iniSamp = i
