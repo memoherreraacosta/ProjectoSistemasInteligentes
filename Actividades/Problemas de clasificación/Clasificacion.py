@@ -5,7 +5,6 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import random
-import time
 
 # Import IRIS data set
 iris = datasets.load_iris()
