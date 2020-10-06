@@ -9,7 +9,9 @@ import struct
 # EMG data
 samp_rate = 256
 
-data = np.loadtxt("data/Izquierda, derecha, cerrado.txt")
+# Read data file
+files = glob("data/*")
+data = np.loadtxt(files[0])
 mark = data[:, data.shape[1]-1]
 samps = data.shape[0]
 
