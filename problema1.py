@@ -16,13 +16,19 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 
-
-# Import Datos misteriosos data set
+##############################
+# Construir X y Y
 data_set = glob("data/*")
 datos = np.loadtxt(data_set[0], dtype="float")
+
+
+###################################
+
+# Import Datos misteriosos data set
+
 x = datos[:,1:]
 y = datos[:,0]
-y = y-1
+# y = y - 101
 n_features = len(x[0])
 results =  dict()
 
