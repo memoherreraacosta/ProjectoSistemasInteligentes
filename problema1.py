@@ -1,21 +1,24 @@
 #------------------------------------------------------------------------------------------------------------------
 #   Sample program for data acquisition and recording.
 #------------------------------------------------------------------------------------------------------------------
-import time
+
 import socket
+import random
+
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.mlab import psd
-import random
-from sklearn import datasets
+
+from time import time
 from sklearn import svm
+from sklearn import datasets
+from matplotlib.mlab import psd
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 
 # Data configuration
 n_channels = 5
 samp_rate = 256
-emg_data = [[] for i in range(n_channels)]
+emg_data = [[] for _ in range(n_channels)]
 samp_count = 0
 
 # Socket configuration
@@ -26,7 +29,7 @@ sock.bind((UDP_IP, UDP_PORT))
 sock.settimeout(0.01)
 
 # Data acquisition
-start_time = time.time()
+start_time = time()
 
 #Plot
 fig, axs = plt.subplots(2,2)
@@ -36,20 +39,27 @@ fig.suptitle('Pairs of variables')
 clf = svm.SVC(kernel = 'linear')
 
 ps = 0
+acc = 0
+precision1 = 0
+precision2 = 0
+precision3 = 0
+recall1 = 0
+recall2 = 0
+recall3 = 0
 while True:
     try:
         data, addr = sock.recvfrom(1024*1024)
 
         values = np.frombuffer(data)
-        ns = int(len(values)/n_channels)
-        samp_count+=ns
-        ps+=ns
+        ns = len(values) // n_channels
+        samp_count += ns
+        ps += ns
 
         for i in range(ns):
             for j in range(n_channels):
                 emg_data[j].append(values[n_channels*i + j])
 
-        elapsed_time = time.time() - start_time
+        elapsed_time = time() - start_time
         if (elapsed_time > 1):
             window_data = np.array([x[samp_count-ps:] for x in emg_data])
             # Power Spectral Analisis
@@ -60,7 +70,7 @@ while True:
             axs[0,1].cla()
             axs[1,0].cla()
             axs[1,1].cla()
-            start_time = time.time()
+            start_time = time()
             axs[0,0].plot(window_data[4], window_data[0], color = 'blue', label = 'Canal 1')
             axs[0,1].plot(window_data[4], window_data[2], color = 'green', label = 'Canal 2')
             axs[0,0].set(xlabel="Time(ms)", ylabel='micro V')
@@ -99,15 +109,7 @@ while True:
             # 5-fold cross-validation
             kf = KFold(n_splits=10, shuffle = True)
             clf = svm.SVC(kernel = 'linear')
-            acc = 0
-            precision1 = 0
-            precision2 = 0
-            precision3 = 0
-            recall1 = 0
-            recall2 = 0
-            recall3 = 0
             for train_index, test_index in kf.split(x):
-
                 # Training phase
                 x_train = x[train_index, :]
                 y_train = y[train_index]
@@ -146,11 +148,10 @@ while True:
             print('RECALL1 = ', recall1/10)
             print('RECALL2 = ', recall2/10)
             print('RECALL3 = ', recall3/10)
-#-------------------------------------------------
 
             print ("Muestras: ", ps)
             print ("Cuenta: ", samp_count)
-            print("")
+            print("\n") # Double space
             ps = 0
     except socket.timeout:
         pass
