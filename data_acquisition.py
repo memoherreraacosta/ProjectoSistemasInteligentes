@@ -46,28 +46,18 @@ while True:
         elapsed_time = time.time() - start_time
         if elapsed_time >= 0.1 and samp_count>=win_size:
 
-            chann1 = emg_data[0]
-            chann2 = emg_data[2]
-            tm = emg_data[4]
-            window_data1 = chann1[-win_size:]
-            window_data2 = chann2[-win_size:]
-            window_data4 = tm[-win_size:]
-
-            #window_data = np.array([x[samp_count-ps:] for x in emg_data])
-            #print(emg_data)
-            #print(window_data)
-
+            window_data = np.array([x[-win_size:] for x in emg_data])
 
             # Power Spectral Analisis
-            power1, freq1 = psd(window_data1, NFFT = win_size, Fs = samp_rate)
-            power2, freq2 = psd(window_data2, NFFT = win_size, Fs = samp_rate)
+            power1, freq1 = psd(window_data[0], NFFT = win_size, Fs = samp_rate)
+            power2, freq2 = psd(window_data[2], NFFT = win_size, Fs = samp_rate)
             axs[0,0].cla()
             axs[0,1].cla()
             axs[1,0].cla()
             axs[1,1].cla()
             start_time = time.time()
-            axs[0,0].plot(window_data4, window_data1, color = 'blue', label = 'Canal 1')
-            axs[0,1].plot(window_data4, window_data2, color = 'green', label = 'Canal 2')
+            axs[0,0].plot(window_data[4], window_data[0], color = 'blue', label = 'Canal 1')
+            axs[0,1].plot(window_data[4], window_data[2], color = 'green', label = 'Canal 2')
             axs[0,0].set(xlabel="Time(ms)", ylabel='micro V')
             axs[0,0].set_ylim([-20, 20])
             axs[0,1].set(xlabel="Time(ms)", ylabel='micro V')
