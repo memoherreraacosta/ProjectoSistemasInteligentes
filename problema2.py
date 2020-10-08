@@ -1,124 +1,149 @@
 #------------------------------------------------------------------------------------------------------------------
 #   Sample program for data acquisition and recording.
 #------------------------------------------------------------------------------------------------------------------
-
+import time
 import socket
-import random
-
 import numpy as np
-import matplotlib.pyplot as plt
-
-from time import time
-from sklearn import svm
-from sklearn import datasets
 from matplotlib.mlab import psd
-from sklearn.model_selection import KFold
+from glob import glob
+from sklearn import svm
 from sklearn.metrics import confusion_matrix
-from pprint import pprint 
-# Data configuration
-n_channels = 5
-samp_rate = 256
-emg_data = [[] for _ in range(n_channels)]
-samp_count = 0
 
-# Socket configuration
-UDP_IP = '127.0.0.1'
-UDP_PORT = 8000
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((UDP_IP, UDP_PORT))
-sock.settimeout(0.01)
 
-# Data acquisition
-start_time = time()
+def main():
 
-#Plot
-fig, axs = plt.subplots(2,2)
-fig.suptitle('Pairs of variables')
+    # Data configuration
+    n_channels = 5
+    samp_rate = 256
+    emg_data = [[] for i in range(n_channels)]
+    samp_count = 0
+    win_size = 256
+    file = 3
 
-# Train SVM classifier with all the available observations
-clf = svm.SVC(kernel = 'linear')
+    # data training
+    clf = training(file, win_size, samp_rate)
 
-ps = 0
-acc = 0
-precision1 = 0
-precision2 = 0
-precision3 = 0
-recall1 = 0
-recall2 = 0
-recall3 = 0
+    # Socket configuration
+    UDP_IP = '127.0.0.1'
+    UDP_PORT = 8000
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((UDP_IP, UDP_PORT))
+    sock.settimeout(0.01)
 
-window_size = 1
+    # Data acquisition
+    start_time = time.time()
 
-while True:
-    try:
-        data, addr = sock.recvfrom(1024*1024)
-        values = np.frombuffer(data)
-        ns = len(values) // n_channels
-        samp_count += ns
-        ps += ns
+    ps = 0
+    while True:
+        try:
+            data, addr = sock.recvfrom(1024*1024)
 
-        for i in range(ns):
-            for j in range(n_channels):
-                emg_data[j].append(values[n_channels*i + j])
+            values = np.frombuffer(data)
+            ns = int(len(values)/n_channels)
+            samp_count+=ns
+            ps+=ns
 
-        elapsed_time = time() - start_time
-        if (elapsed_time > window_size):
-            window_data = np.array([x[samp_count-ps:] for x in emg_data])
-            print("SHAPE: {0}\n".format(np.shape(window_data)))
-            pprint(window_data)
-            # Power Spectral Analisis
-            power1, freq1 = psd(window_data[0], NFFT=ps, Fs=samp_rate)
-            power2, freq2 = psd(window_data[2], NFFT=ps, Fs=samp_rate)
+            for i in range(ns):
+                for j in range(n_channels):
+                    emg_data[j].append(values[n_channels*i + j])
 
-            axs[0,0].cla()
-            axs[0,1].cla()
-            axs[1,0].cla()
-            axs[1,1].cla()
-            start_time = time()
-            axs[0,0].plot(window_data[4], window_data[0], color = 'blue', label = 'Canal 1')
-            axs[0,1].plot(window_data[4], window_data[2], color = 'green', label = 'Canal 2')
-            axs[0,0].set(xlabel="Time(ms)", ylabel='micro V')
-            axs[0,0].set_ylim([-200, 200])
-            axs[0,1].set(xlabel="Time(ms)", ylabel='micro V')
-            axs[0,1].set_ylim([-200, 200])
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= 0.1 and samp_count>=win_size:
 
-            start_index = np.where(freq1 >= 4.0)[0][0]
-            end_index = np.where(freq1 >= 60.0)[0][0]
+                window_data = np.array([x[-win_size:] for x in emg_data])
+                powers = []
+                # Power Spectral Analisis
+                power1, freq1 = psd(window_data[0], NFFT = win_size, Fs = samp_rate)
+                start_index = np.where(freq1 >= 4.0)[0][0]
+                end_index = np.where(freq1 >= 60.0)[0][0]
+                powers.extend(power1[start_index:end_index])
+                power2, freq2 = psd(window_data[2], NFFT = win_size, Fs = samp_rate)
+                powers.extend(power2[start_index:end_index])
+                pred = clf.predict([powers])
 
-            axs[1,0].plot(freq1[start_index:end_index], power1[start_index:end_index], color = "blue")
-            axs[1,0].set(xlabel='Hz', ylabel='Power')
 
-            start_index = np.where(freq2 >= 4.0)[0][0]
-            end_index = np.where(freq2 >= 60.0)[0][0]
+                print("Prediccion: ", pred)
+                # print ("Muestras: ", ps)
+                # print ("Cuenta: ", samp_count)
+                print("")
+                ps = 0
+        except socket.timeout:
+            pass
 
-            axs[1,1].plot(freq2[start_index:end_index], power2[start_index:end_index], color = 'green')
-            axs[1,1].set(xlabel='Hz', ylabel='Power')
+def preprocessing(file, win_size, samp_rate):
+    # Construir X y Y
+    files = glob("data/*")
+    data = np.loadtxt(files[file])
 
-            plt.pause(.01)
+    samps = data.shape[0]
 
-            # 5-fold cross-validation
-            kf = KFold(n_splits = 5, shuffle = True)
-            clf = svm.SVC(kernel = 'linear')
+    # Data channels
+    channels = [data[:, i] for i in [1,3]]
 
-            x = window_data[:,1:]
-            y = window_data[:,0]
-            y = y-1
-            acc = 0
-            for train_index, test_index in kf.split(x):
-                # Training phase
-                x_train = x[train_index, :]
-                y_train = y[train_index]
-                clf.fit(x_train, y_train)
+    y = data[:, 6]
 
-                # Test phase
-                x_test = x[test_index, :]
-                y_test = y[test_index]    
-                y_pred = clf.predict(x_test)
-                # Predict one new sample
-                print("Prediction for a new observation", clf.predict(x_test))
+    training_samples = {}
+    for i in range(samps):
+        if y[i] > 0:
+            # print("Marca", y[i], 'Muestra', i, 'Tiempo', time[i])
+            if  (y[i] > 100) and (y[i] < 200):
+                iniSamp = i
+                condition_id = y[i]-101
+            elif y[i] == 200:
+                if not condition_id in training_samples.keys():
+                    training_samples[condition_id] = []
+                training_samples[int(condition_id)].append([iniSamp, i])
 
-            ps = 0
-    except socket.timeout:
-        pass
+    Y = []
+    X = []
+    for condition_id, samples in training_samples.items():
+        for sample in samples:
+            for i in range(sample[0], sample[1] if sample[1]%win_size==0 else sample[1]-win_size, win_size):
+                row = []
+                for channel in channels:
+                    ini_samp = i
+                    end_samp = i + win_size
+                    x = channel[ini_samp : end_samp]
 
-plt.show()
+                    power, freq = psd(x, NFFT = win_size, Fs = samp_rate)
+                    start_index = np.where(freq >= 4.0)[0][0]
+                    end_index = np.where(freq >= 60.0)[0][0]
+                    row.extend(power[start_index:end_index])
+                X.append(row)
+                Y.append(condition_id)
+
+    x = np.array(X)
+    y = np.array(Y)
+    return x, y
+
+
+def training(file, win_size, samp_rate):
+    x_train, y_train = preprocessing(file, win_size, samp_rate)
+    x_test, y_test = preprocessing(file+1, win_size, samp_rate)
+
+    # 5-fold cross-validation
+    # Evaluate model SVM linear
+    clf = svm.SVC(kernel = 'linear')
+
+    # Training phase
+    clf.fit(x_train, y_train)
+
+    # Test phase
+    y_pred = clf.predict(x_test)
+
+    # Calculate confusion matrix and model performance
+    recall = []
+    cm = confusion_matrix(y_test, y_pred)
+    acc = sum([cm[i, i] for i in range(len(cm[0]))])/len(y_test)
+
+    for i in range(len(cm[0])):
+        recall.append(cm[i,i]/ sum(cm[i,:]))
+
+
+    print("\nSVM Linear model")
+    print("ACC: ", acc, "Recall: ", recall)
+    return clf
+
+
+if __name__ == '__main__':
+    main()
