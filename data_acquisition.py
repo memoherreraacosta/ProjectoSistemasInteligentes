@@ -12,6 +12,7 @@ n_channels = 5
 samp_rate = 256
 emg_data = [[] for i in range(n_channels)]
 samp_count = 0
+win_size = 256
 
 # Socket configuration
 UDP_IP = '127.0.0.1'
@@ -43,22 +44,34 @@ while True:
                 emg_data[j].append(values[n_channels*i + j])
 
         elapsed_time = time.time() - start_time
-        if (elapsed_time > 1):
-            window_data = np.array([x[samp_count-ps:] for x in emg_data])
+        if elapsed_time >= 0.1 and samp_count>=win_size:
+
+            chann1 = emg_data[0]
+            chann2 = emg_data[2]
+            tm = emg_data[4]
+            window_data1 = chann1[-win_size:]
+            window_data2 = chann2[-win_size:]
+            window_data4 = tm[-win_size:]
+
+            #window_data = np.array([x[samp_count-ps:] for x in emg_data])
+            #print(emg_data)
+            #print(window_data)
+
+
             # Power Spectral Analisis
-            power1, freq1 = psd(window_data[0], NFFT = ps, Fs = samp_rate)
-            power2, freq2 = psd(window_data[2], NFFT = ps, Fs = samp_rate)
+            power1, freq1 = psd(window_data1, NFFT = win_size, Fs = samp_rate)
+            power2, freq2 = psd(window_data2, NFFT = win_size, Fs = samp_rate)
             axs[0,0].cla()
             axs[0,1].cla()
             axs[1,0].cla()
             axs[1,1].cla()
             start_time = time.time()
-            axs[0,0].plot(window_data[4], window_data[0], color = 'blue', label = 'Canal 1')
-            axs[0,1].plot(window_data[4], window_data[2], color = 'green', label = 'Canal 2')
+            axs[0,0].plot(window_data4, window_data1, color = 'blue', label = 'Canal 1')
+            axs[0,1].plot(window_data4, window_data2, color = 'green', label = 'Canal 2')
             axs[0,0].set(xlabel="Time(ms)", ylabel='micro V')
-            axs[0,0].set_ylim([-200, 200])
+            axs[0,0].set_ylim([-20, 20])
             axs[0,1].set(xlabel="Time(ms)", ylabel='micro V')
-            axs[0,1].set_ylim([-200, 200])
+            axs[0,1].set_ylim([-20, 20])
 
             start_index = np.where(freq1 >= 4.0)[0][0]
             end_index = np.where(freq1 >= 60.0)[0][0]
@@ -66,13 +79,10 @@ while True:
             axs[1,0].plot(freq1[start_index:end_index], power1[start_index:end_index], color = "blue")
             axs[1,0].set(xlabel='Hz', ylabel='Power')
 
-            start_index = np.where(freq2 >= 4.0)[0][0]
-            end_index = np.where(freq2 >= 60.0)[0][0]
-
             axs[1,1].plot(freq2[start_index:end_index], power2[start_index:end_index], color = 'green')
             axs[1,1].set(xlabel='Hz', ylabel='Power')
 
-            plt.pause(.01)
+            plt.pause(.001)
 
             print ("Muestras: ", ps)
             print ("Cuenta: ", samp_count)

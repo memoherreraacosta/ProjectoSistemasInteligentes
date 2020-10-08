@@ -6,14 +6,10 @@ import socket
 import time
 import struct
 
-from glob import glob
-
 # EMG data
 samp_rate = 256
 
-# Read data file
-files = glob("data/*")
-data = np.loadtxt(files[0])
+data = np.loadtxt("data/Izquierda, derecha, cerrado.txt")
 mark = data[:, data.shape[1]-1]
 samps = data.shape[0]
 
@@ -33,7 +29,7 @@ start_time = time.time()
 while True:
 
     # Calculate elapsed time and current data index
-    time.sleep(0.1)
+    time.sleep(0.05)
     elapsed_time = time.time() - start_time
 
     start_index = end_index
@@ -49,12 +45,13 @@ while True:
         out_data = []
         for i in range(ns):
             for j in range(n_channels):
-                out_data.append(data[index][j])                
-                index+=1
-                index %= samps
+                out_data.append(data[index][j])
 
             if (mark[index] != 0):
                 print('--------------- Marca:', int(mark[index]), '---------------')
+
+            index+=1
+            index %= samps
 
         pack_string = '<' + str(n_channels*ns) + 'd'
         bin_data = struct.pack(pack_string, *out_data)
@@ -62,4 +59,4 @@ while True:
         # Send data
         sock.sendto(bin_data, (UDP_IP, UDP_PORT))
 
-    print("Muestras enviadas:", ns)
+    #print("Muestras enviadas:", ns)
