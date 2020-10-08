@@ -4,6 +4,8 @@
 
 #------------------------------------------------------------------------------------------------------------------
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.mlab import psd
 
 from glob import glob
 from sklearn import svm
@@ -16,20 +18,63 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 
-##############################
+
 # Construir X y Y
-data_set = glob("data/*")
-datos = np.loadtxt(data_set[0], dtype="float")
+files = glob("data/*")
+data = np.loadtxt(files[0])
+
+win_size = 256 # 1 seg
+samp_rate = 256
+
+samps = data.shape[0]
+
+# Time channel
+time = data[:, 0]
+
+# Data channels
+channels = [data[:, i] for i in [1,3]]
+# x, y data
+# x = data[:, 1:5]
+y = data[:, 6]
+
+training_samples = {}
+for i in range(samps):
+    if y[i] > 0:
+        # print("Marca", y[i], 'Muestra', i, 'Tiempo', time[i])
+        if  (y[i] > 100) and (y[i] < 200):
+            iniSamp = i
+            condition_id = y[i]-100
+        elif y[i] == 200:
+            if not condition_id in training_samples.keys():
+                training_samples[condition_id] = []
+            training_samples[int(condition_id)].append([iniSamp, i])
+
+print('Rango de muestras con datos de entrenamiento:', training_samples)
+
+Y = []
+X = []
+for condition_id, samples in training_samples.items():
+    for sample in samples:
+        for i in range(sample[0], sample[1] if sample[1]%win_size==0 else sample[1]-win_size, win_size):
+            row = []
+            for channel in channels:
+                ini_samp = i
+                end_samp = i + win_size
+                x = channel[ini_samp : end_samp]
+
+                power, freq = psd(x, NFFT = win_size, Fs = samp_rate)
+                start_index = np.where(freq >= 4.0)[0][0]
+                end_index = np.where(freq >= 60.0)[0][0]
+                row.extend(power[start_index:end_index])
+            X.append(row)
+            Y.append(condition_id)
+
+x = np.array(X)
+y = np.array(Y)
 
 
-###################################
 
-# Import Datos misteriosos data set
-
-x = datos[:,1:]
-y = datos[:,0]
-# y = y - 101
-n_features = len(x[0])
+n_features = x.shape[1]
 results =  dict()
 
 # 5-fold cross-validation
@@ -138,7 +183,6 @@ for train_index, test_index in kf.split(x):
 
 results["KNN"] = {"ACC": acc/5, "Recall": recall/5}
 
-
 # Evaluate model Neuronal Network Multi Capa
 kf = KFold(n_splits=5, shuffle = True)
 acc = 0
@@ -168,6 +212,7 @@ for train_index, test_index in kf.split(x):
 
 results["red multicapa"] = {"ACC": acc/5, "Recall": recall/5}
 
+pprint(results)
 
 # Evaluate model Neuronal Network Una capa
 kf = KFold(n_splits=5, shuffle = True)
@@ -189,6 +234,8 @@ for train_index, test_index in kf.split(x):
     y_test = y[test_index]
     y_pred = (clf.predict(x_test) > 0.5).astype("int32")
 
+    print(y_test)
+    print(y_pred)
     cm = confusion_matrix(y_test, y_pred)
     acc += (cm[0,0]+cm[1,1])/len(y_test)
     recall[0] += cm[0,0]/(cm[0,0] + cm[0,1])
@@ -197,4 +244,3 @@ for train_index, test_index in kf.split(x):
 results["red unacapa"] = {"ACC": acc/5, "Recall": recall/5}
 
 
-pprint(results)
