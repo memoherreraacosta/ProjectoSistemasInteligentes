@@ -5,11 +5,13 @@ import numpy as np
 import socket
 import time
 import struct
+from glob import glob
 
 # EMG data
 samp_rate = 256
 
-data = np.loadtxt("Izquierda - Derecha - Cerrado 2.txt") 
+files = glob("data/*")
+data = np.loadtxt(files[0])
 mark = data[:, data.shape[1]-1]
 samps = data.shape[0]
 
