@@ -59,7 +59,7 @@ class MazeSolver(SearchProblem):
 
 if __name__ == "__main__":
     # Define the map
-    MAP = """
+    MAP = ["""
     ++++++++++++++++++++++
     + O +   ++ ++        +
     +     +     +++++++ ++
@@ -73,87 +73,90 @@ if __name__ == "__main__":
     ++++++++++++++++++++++
     """
 
-    '''
-    MAP = """
+    
+    ,"""
     ++++++++++++++++++++++++++++++
-    + o       +              +   +
+    + O       +              +   +
     + ++++    ++++++++       +   +
     +    +    +              +   +
     +    +++     +++++  ++++++   +
     +      +   +++   +           +
     +      +     +   +  +  +   +++
-    +     +++++    +    +  + x   +
+    +     +++++    +    +  + X   +
     +              +       +     +
     ++++++++++++++++++++++++++++++
     """
 
-    MAP = """
+ 
+    ,"""
     ++++++++++++++++++++++++++++++
     +         +              +   +
     + ++++    ++++++++       +   +
-    +  o +    +              +   +
+    +  O +    +              +   +
     +    +++     +++++  ++++++   +
     +      +   +++   +           +
     +      +     +   +  +  +   +++
-    +     +++++    +    +  + x   +
+    +     +++++    +    +  + X   +
     +              +       +     +
     ++++++++++++++++++++++++++++++
     """
 
-    MAP = """
+    ,"""
     ++++++++++++++++++++++++++++++
-    +o                       +   +
+    +O                       +   +
     +  +++    ++++++++       +   +
     +  + +    +              +   +
     +    +++     +++++ +++++++   +
     +      +   ++++              +
     +      +     + + +  +  +   +++
     +     +++++        ++  + + + +
-    +  ++          + +          x+
+    +  ++          + +          X+
     ++++++++++++++++++++++++++++++
-    """
-'''
+    """]
 
-    # Convert map to a list
-    print(MAP)
-    MAP = [list(x) for x in MAP.split("\n") if x]
+    for map in MAP: 
+        # Convert map to a list
+        print("------MAP------")
+        print(map)
+        map = [list(x) for x in map.split("\n") if x]
 
-    # Define cost of moving around the map
-    cost_regular = 1.0
-    cost_diagonal = 1.7
+        # Define cost of moving around the map
+        cost_regular = 1.0
+        cost_diagonal = 1.7
 
-    # Create the cost dictionary
-    COSTS = {
-        "up": cost_regular,
-        "down": cost_regular,
-        "left": cost_regular,
-        "right": cost_regular,
-        "up left": cost_diagonal,
-        "up right": cost_diagonal,
-        "down left": cost_diagonal,
-        "down right": cost_diagonal,
-    }
+        # Create the cost dictionary
+        COSTS = {
+            "up": cost_regular,
+            "down": cost_regular,
+            "left": cost_regular,
+            "right": cost_regular,
+            "up left": cost_diagonal,
+            "up right": cost_diagonal,
+            "down left": cost_diagonal,
+            "down right": cost_diagonal,
+        }
 
-    # Create maze solver object
-    problem = MazeSolver(MAP)
+        # Create maze solver object
+        problem = MazeSolver(map)
 
-    # Run the solver
-    result = astar(problem, graph_search=True)
+        # Run the solver
+        result = astar(problem, graph_search=True)
 
-    # Extract the path
-    path = [x[1] for x in result.path()]
+        # Extract the path
+        path = [x[1] for x in result.path()]
 
-    # Print the result
-    print()
-    for y in range(len(MAP)):
-        for x in range(len(MAP[y])):
-            if (x, y) == problem.initial:
-                print('O', end='')
-            elif (x, y) == problem.goal:
-                print('X', end='')
-            elif (x, y) in path:
-                print('*', end='')
-            else:
-                print(MAP[y][x], end='')
-
+        # Print the result
+        print("--solution--")
         print()
+        for y in range(len(map)):
+            for x in range(len(map[y])):
+                if (x, y) == problem.initial:
+                    print('O', end='')
+                elif (x, y) == problem.goal:
+                    print('X', end='')
+                elif (x, y) in path:
+                    print('*', end='')
+                else:
+                    print(map[y][x], end='')
+
+            print()
