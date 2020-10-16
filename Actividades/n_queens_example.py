@@ -33,12 +33,13 @@ class Board(object):
                     row = random.choice(range(n))
                     col = random.choice(range(n))
                     if not [row, col] in self.queens:
-                        empty_space = True;
+                        empty_space = True
                 self.queens.append([row, col])
         else:
-            for q in range(n):
-                self.queens.append([0, q])
-
+            self.queens = [
+                [0, q]
+                for q in range(n)
+            ]
 
     def show_board(self):        
         """ This method prints the current board. """               
@@ -48,10 +49,9 @@ class Board(object):
                     print (' Q ', end = '')
                 else:
                     print (' - ', end = '')
-            print('')
-        print('')
+            print()
+        print()
     
-
     def cost(self):
         """ This method calculates the cost of this solution (the number of queens that are not safe). """
         c = self.n
@@ -72,14 +72,12 @@ class Board(object):
                 c -= 1
         return c
 
-
     def moves(self):
         """ This method returns a list of possible moves given the current placements. """
-        move_list = []
+        move_list = list()
         for i in range(self.n):
             row = self.queens[i][0]
             col = self.queens[i][1]
-            
             for rd in [-1,0,1]:
                 for cd in [-1,0,1]:
                     if (rd == 0) and (cd == 0):
@@ -88,8 +86,8 @@ class Board(object):
                     if (new_pos[0] >= 0) and (new_pos[0] < self.n) and (new_pos[1] >= 0) and (new_pos[1] < self.n):
                         if not new_pos in self.queens: 
                             move_list.append([i, new_pos])
-        return move_list
 
+        return move_list
 
     def neighbor(self):
         """ This method returns a board instance like this one but with one random move made. """        
@@ -116,7 +114,13 @@ board.show_board()
 cost = board.cost()             # Initial cost    
 step = 0;                       # Step count
 
-while cost > 0:
+alpha = 0.9995; # Coefficient of the exponential temperature schedule
+t0 = 1;         # Initial temperature
+t = t0
+
+while (t > 0.005) and (cost > 0):
+    # Calculate temperature
+    t = t0 * math.pow(alpha, step)
     step += 1
     # Get random neighbor
     neighbor = board.neighbor()
@@ -126,8 +130,14 @@ while cost > 0:
     if new_cost < cost:
         board = neighbor
         cost = new_cost
+    else:
+        # Calculate probability of accepting the neighbor
+        p = math.exp(-(new_cost - cost)/t)
+        if p >= random.random():
+            board = neighbor
+            cost = new_cost
 
-    print("Iteration: ", step, "    Cost: ", cost)
+    print("Iteration: ", step, "    Cost: ", cost, "    Temperature: ", t)
 
 print("--------Solution-----------")
 board.show_board()         
