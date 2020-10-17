@@ -55,8 +55,8 @@ class Classroom(object):
                 # print(group)
                 total += len(group) - 1
                 # print(total)
-        print("Estudiante",student,"sin chocolate. Grupo de amigos:",friends,"insatisfacción =",total)
-        print()
+        # print("Estudiante",student,"sin chocolate. Grupo de amigos:",friends,"insatisfacción =",total)
+        # print()
         return total
 
     def show_classroom(self):
@@ -85,7 +85,7 @@ class Classroom(object):
         #             safe = False
         #     if safe:
         #         c -= 1
-        print("Costo de insatisfaccion total:",c)
+        # print("Costo de insatisfaccion total:",c)
         return c
 
     def moves(self):
@@ -124,41 +124,41 @@ class Classroom(object):
 # random.seed(time.time()*1000)
 
 classroom = Classroom(16, 8)                # Initialize board
-print("Estudiantes seleccionados:",classroom.students)
+# print("Estudiantes seleccionados:",classroom.students)
 print()
-# classroom.show_classroom()
+classroom.show_classroom()
 cost = classroom.cost()             # Initial cost
-# step = 0;                       # Step count
+step = 0;                       # Step count
 
-# alpha = 0.9995; # Coefficient of the exponential temperature schedule
-# t0 = 1;         # Initial temperature
-# t = t0
+alpha = 0.9995; # Coefficient of the exponential temperature schedule
+t0 = 1;         # Initial temperature
+t = t0
 
-# while (t > 0.005):
+while (t > 0.005):
 
-#     # Calculate temperature
-#     t = t0 * math.pow(alpha, step)
-#     step += 1
+    # Calculate temperature
+    t = t0 * math.pow(alpha, step)
+    step += 1
 
-#     # Get random neighbor
-#     neighbor = classroom.neighbor()
-#     new_cost = neighbor.cost()
+    # Get random neighbor
+    neighbor = classroom.neighbor()
+    new_cost = neighbor.cost()
 
-#     # Test neighbor
-#     if new_cost < cost:
-#         classroom = neighbor
-#         cost = new_cost
-#     else:
-#         # Calculate probability of accepting the neighbor
-#         p = math.exp(-(new_cost - cost)/t)
-#         if p >= random.random():
-#             classroom = neighbor
-#             cost = new_cost
+    # Test neighbor
+    if new_cost < cost:
+        classroom = neighbor
+        cost = new_cost
+    else:
+        # Calculate probability of accepting the neighbor
+        p = math.exp(-(new_cost - cost)/t)
+        if p >= random.random():
+            classroom = neighbor
+            cost = new_cost
 
-#     print("Iteration: ", step, "    Cost: ", cost, "    Temperature: ", t)
+    print("Iteration: ", step, "    Cost: ", cost, "    Temperature: ", t)
 
-# print("--------Solution-----------")
-# classroom.show_classroom()
+print("--------Solution-----------")
+classroom.show_classroom()
 
 #------------------------------------------------------------------------------------------------------------------
 #   End of file
