@@ -15,6 +15,8 @@ import math
 
 class Classroom(object):
 
+    groups = [[1,2],[2,3,4],[1,7,3],[10,11,12],[13,14,7,8,9],[0,5,6,15]]
+
     def __init__(self, n, c, randomize = True):
         """
             This constructor initializes the board with n queens.
@@ -42,6 +44,16 @@ class Classroom(object):
                     self.chocolates-=1
                 else:
                     self.students.append(0)
+
+    # Insatisfaction when a student doesn't get a chocolate
+    def get_insatisfaction(self,student): 
+        total = 2 # Initial value is 2 due to personal insatisfaction
+        for group in self.groups:
+            if student in group:
+                print(group)
+                total += len(group) - 1
+                print(total)
+        return total
 
     def show_classroom(self):
         """ This method prints the current board. """
@@ -100,42 +112,43 @@ class Classroom(object):
 #------------------------------------------------------------------------------------------------------------------
 #   Program
 #------------------------------------------------------------------------------------------------------------------
-random.seed(time.time()*1000)
+# random.seed(time.time()*1000)
 
 classroom = Classroom(16, 8)                # Initialize board
-classroom.show_classroom()
-cost = classroom.cost()             # Initial cost
-step = 0;                       # Step count
+classroom.get_insatisfaction(0)
+# classroom.show_classroom()
+# cost = classroom.cost()             # Initial cost
+# step = 0;                       # Step count
 
-alpha = 0.9995; # Coefficient of the exponential temperature schedule
-t0 = 1;         # Initial temperature
-t = t0
+# alpha = 0.9995; # Coefficient of the exponential temperature schedule
+# t0 = 1;         # Initial temperature
+# t = t0
 
-while (t > 0.005):
+# while (t > 0.005):
 
-    # Calculate temperature
-    t = t0 * math.pow(alpha, step)
-    step += 1
+#     # Calculate temperature
+#     t = t0 * math.pow(alpha, step)
+#     step += 1
 
-    # Get random neighbor
-    neighbor = classroom.neighbor()
-    new_cost = neighbor.cost()
+#     # Get random neighbor
+#     neighbor = classroom.neighbor()
+#     new_cost = neighbor.cost()
 
-    # Test neighbor
-    if new_cost < cost:
-        classroom = neighbor
-        cost = new_cost
-    else:
-        # Calculate probability of accepting the neighbor
-        p = math.exp(-(new_cost - cost)/t)
-        if p >= random.random():
-            classroom = neighbor
-            cost = new_cost
+#     # Test neighbor
+#     if new_cost < cost:
+#         classroom = neighbor
+#         cost = new_cost
+#     else:
+#         # Calculate probability of accepting the neighbor
+#         p = math.exp(-(new_cost - cost)/t)
+#         if p >= random.random():
+#             classroom = neighbor
+#             cost = new_cost
 
-    print("Iteration: ", step, "    Cost: ", cost, "    Temperature: ", t)
+#     print("Iteration: ", step, "    Cost: ", cost, "    Temperature: ", t)
 
-print("--------Solution-----------")
-classroom.show_classroom()
+# print("--------Solution-----------")
+# classroom.show_classroom()
 
 #------------------------------------------------------------------------------------------------------------------
 #   End of file
