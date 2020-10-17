@@ -48,11 +48,15 @@ class Classroom(object):
     # Insatisfaction when a student doesn't get a chocolate
     def get_insatisfaction(self,student): 
         total = 2 # Initial value is 2 due to personal insatisfaction
+        friends = []
         for group in self.groups:
             if student in group:
-                print(group)
+                friends.append(group)
+                # print(group)
                 total += len(group) - 1
-                print(total)
+                # print(total)
+        print("Estudiante",student,"sin chocolate. Grupo de amigos:",friends,"insatisfacción =",total)
+        print()
         return total
 
     def show_classroom(self):
@@ -61,22 +65,27 @@ class Classroom(object):
 
     def cost(self):
         """ This method calculates the cost of this solution (the number of queens that are not safe). """
-        c = self.n
+        # c = self.n
+        c = 0
         for i in range(self.n):
-            queen = self.queens[i]
-            safe = True
-            for j in range(self.n):
-                if i == j:
-                    continue
-                other_queen = self.queens[j]
-                if (queen[0] == other_queen[0]):
-                    safe = False
-                elif (queen[1] == other_queen[1]):
-                    safe = False
-                elif abs(queen[0]-other_queen[0]) == abs(queen[1]-other_queen[1]):
-                    safe = False
-            if safe:
-                c -= 1
+            if(not self.students[i]):
+                c += self.get_insatisfaction(i)
+        # for i in range(self.n):
+        #     queen = self.queens[i]
+        #     safe = True
+        #     for j in range(self.n):
+        #         if i == j:
+        #             continue
+        #         other_queen = self.queens[j]
+        #         if (queen[0] == other_queen[0]):
+        #             safe = False
+        #         elif (queen[1] == other_queen[1]):
+        #             safe = False
+        #         elif abs(queen[0]-other_queen[0]) == abs(queen[1]-other_queen[1]):
+        #             safe = False
+        #     if safe:
+        #         c -= 1
+        print("Costo de insatisfaccion total:",c)
         return c
 
     def moves(self):
@@ -115,9 +124,10 @@ class Classroom(object):
 # random.seed(time.time()*1000)
 
 classroom = Classroom(16, 8)                # Initialize board
-classroom.get_insatisfaction(0)
+print("Estudiantes seleccionados:",classroom.students)
+print()
 # classroom.show_classroom()
-# cost = classroom.cost()             # Initial cost
+cost = classroom.cost()             # Initial cost
 # step = 0;                       # Step count
 
 # alpha = 0.9995; # Coefficient of the exponential temperature schedule
