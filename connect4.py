@@ -22,6 +22,12 @@ PLAYER_PIECE = 1
 AI_PIECE = 2
 WINDOW_LENGTH = 4
 
+row = int(input("Ingrese el numero de renglones (renglones por default 7): "))
+col = int(input("Ingrese el numero de columnas (columnas por default 6): "))
+
+ROW_COUNT = row
+COLUMN_COUNT = col
+
 def create_board():
 	return np.zeros((ROW_COUNT, COLUMN_COUNT)) # A board
 
@@ -214,7 +220,6 @@ board = create_board()
 pygame.init()
 pygame.mixer.init()
 sound = pygame.mixer.Sound('Chillout-downtempo-music-loop.mp3')
-myfont = pygame.font.SysFont("timesnewromanbold", 65)
 sound.play(-1)
 sound.set_volume(0.30)
 pygame.display.set_caption('Conecta 4')
@@ -228,10 +233,21 @@ height = (ROW_COUNT+1) * SQUARESIZE
 
 size = (1200, 700)
 
+if ROW_COUNT <= 5:
+	size = (800, height)
+
+size_font = 45
+
+if COLUMN_COUNT < 5 or ROW_COUNT < 5:
+	size_font = 45
+else:
+	size_font = 65
+
 RADIUS = int(SQUARESIZE/2 - 5)
 
 screen = pygame.display.set_mode(size)
 draw_board(board)
+myfont = pygame.font.SysFont("timesnewromanbold", size_font)
 pygame.display.update()
 #-----------------------------
 
