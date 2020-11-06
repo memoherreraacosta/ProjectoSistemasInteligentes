@@ -220,7 +220,7 @@ def draw_board(board):
 
 #------- Init the game
 board = create_board()
-sound = pygame.mixer.Sound('Chillout-downtempo-music-loop.mp3')
+sound = pygame.mixer.Sound("./Chillout-downtempo-music-loop.mp3")
 sound.play(-1)
 sound.set_volume(0.30)
 pygame.display.set_caption('Conecta 4')
