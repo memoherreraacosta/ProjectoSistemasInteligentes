@@ -22,6 +22,9 @@ PLAYER_PIECE = 1
 AI_PIECE = 2
 WINDOW_LENGTH = 4
 
+pygame.init()
+pygame.mixer.init()
+
 row = int(input("Ingrese el numero de renglones (renglones por default 7): "))
 col = int(input("Ingrese el numero de columnas (columnas por default 6): "))
 
@@ -217,8 +220,6 @@ def draw_board(board):
 
 #------- Init the game
 board = create_board()
-pygame.init()
-pygame.mixer.init()
 sound = pygame.mixer.Sound('Chillout-downtempo-music-loop.mp3')
 sound.play(-1)
 sound.set_volume(0.30)
@@ -234,7 +235,7 @@ height = (ROW_COUNT+1) * SQUARESIZE
 size = (1200, 700)
 
 if ROW_COUNT <= 5:
-	size = (800, height)
+	size = (850, height)
 
 size_font = 45
 
