@@ -274,7 +274,7 @@ while not game_over:
 				posx = (posx + 100)%width
 				if turn == PLAYER:
 					pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
-			if event.key == pygame.K_RETURN:
+			if event.key == pygame.K_DOWN:
 				pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
 				pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
 				# Ask for Player 1 Input

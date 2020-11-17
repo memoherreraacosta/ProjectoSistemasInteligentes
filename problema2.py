@@ -8,9 +8,14 @@ from matplotlib.mlab import psd
 from glob import glob
 from sklearn import svm
 from sklearn.metrics import confusion_matrix
+from pynput.keyboard import Key, Controller
 
 
 def main():
+    #Keyboard
+    keyboard = Controller()
+    l_key_pressed = False
+    n_key_pressed = False
 
     # Data configuration
     n_channels = 5
@@ -59,13 +64,24 @@ def main():
                 powers.extend(power1[start_index:end_index])
                 power2, freq2 = psd(window_data[2], NFFT = win_size, Fs = samp_rate)
                 powers.extend(power2[start_index:end_index])
-                pred = clf.predict([powers])
+                pred = int(clf.predict([powers])[0])
 
 
                 print("Prediccion: ", pred)
                 # print ("Muestras: ", ps)
                 # print ("Cuenta: ", samp_count)
                 print("")
+                if(pred == 0 and not l_key_pressed):
+                    l_key_pressed = True
+                    keyboard.press(Key.right)
+                    keyboard.release(Key.right)
+                elif(pred == 2):
+                    l_key_pressed = False
+                    n_key_pressed = False
+                elif(pred == 1 and not n_key_pressed):
+                    n_key_pressed = True
+                    keyboard.press(Key.down)
+                    keyboard.release(Key.down)
                 ps = 0
         except socket.timeout:
             pass
