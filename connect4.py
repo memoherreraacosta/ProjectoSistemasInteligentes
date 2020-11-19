@@ -19,14 +19,18 @@ AI_MINIMAX = 1
 
 EMPTY = 0
 PLAYER_PIECE = 1
+
 AI_PIECE = 2
 WINDOW_LENGTH = 4
 
 pygame.init()
 pygame.mixer.init()
 
-row = int(input("Ingrese el numero de renglones (renglones por default 7): "))
-col = int(input("Ingrese el numero de columnas (columnas por default 6): "))
+row = input("Ingrese el numero de renglones (renglones por default 7): ")
+col = input("Ingrese el numero de columnas (columnas por default 6): ")
+
+row = int(row) if row else 7
+col = int(col) if col else 6
 
 ROW_COUNT = row
 COLUMN_COUNT = col
@@ -197,7 +201,9 @@ def pick_best_move(board, piece):
 def draw_board(board):
 	for c in range(COLUMN_COUNT):
 		for r in range(ROW_COUNT):
-			pygame.draw.rect(screen, YELLOW,
+			pygame.draw.rect(
+				screen,
+				YELLOW,
 				(c*SQUARESIZE, r*SQUARESIZE+SQUARESIZE, SQUARESIZE, SQUARESIZE)
 			)
 			pygame.draw.circle(screen, WHITE,
@@ -207,12 +213,16 @@ def draw_board(board):
 	for c in range(COLUMN_COUNT):
 		for r in range(ROW_COUNT):		
 			if board[r][c] == PLAYER_PIECE:
-				pygame.draw.circle(screen, RED,
+				pygame.draw.circle(
+					screen,
+					RED,
 					(int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)),
 					RADIUS
 				)
 			elif board[r][c] == AI_PIECE: 
-				pygame.draw.circle(screen, BLACK,
+				pygame.draw.circle(
+					screen,
+					BLACK,
 					(int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)),
 					RADIUS
 				)
@@ -232,7 +242,9 @@ SQUARESIZE = 100
 width = COLUMN_COUNT * SQUARESIZE
 height = (ROW_COUNT+1) * SQUARESIZE
 
-size = (1200, 700)
+# Change to: (1200, 700) to split the game view
+#            (width, height) to show the board only
+size = (width, height)
 
 if ROW_COUNT <= 5:
 	size = (850, height)
@@ -252,7 +264,7 @@ myfont = pygame.font.SysFont("timesnewromanbold", size_font)
 pygame.display.update()
 #-----------------------------
 
-turn = random.randint(PLAYER, AI_MINIMAX)
+turn = PLAYER
 
 posx = 50
 
@@ -266,12 +278,12 @@ while not game_over:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_LEFT:
 				pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
-				posx = (posx - 100)%width
+				posx = (posx - SQUARESIZE)%width
 				if turn == PLAYER:
 					pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
 			if event.key == pygame.K_RIGHT:
 				pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
-				posx = (posx + 100)%width
+				posx = (posx + SQUARESIZE)%width
 				if turn == PLAYER:
 					pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
 			if event.key == pygame.K_DOWN:
@@ -298,6 +310,7 @@ while not game_over:
 			row = get_next_open_row(board, col)
 			drop_piece(board, row, col, AI_PIECE)
 			if winning_move(board, AI_PIECE):
+				draw_board(board)
 				pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
 				label = myfont.render("AI MiniMax wins!!", True, BLACK)
 				screen.blit(label, (20,20))
@@ -308,5 +321,5 @@ while not game_over:
 			turn = turn % 2
 
 	if game_over:
-		pygame.time.wait(2000)
+		pygame.time.wait(1000)
 		sound.stop()
