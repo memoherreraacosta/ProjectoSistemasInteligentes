@@ -221,9 +221,9 @@ def draw_board(board):
 
 #------- Init the game
 board = create_board()
-sound = pygame.mixer.Sound("./Chillout-downtempo-music-loop.mp3")
-sound.play(-1)
-sound.set_volume(0.30)
+#sound = pygame.mixer.Sound("./Chillout-downtempo-music-loop.mp3")
+#sound.play(-1)
+#sound.set_volume(0.30)
 pygame.display.set_caption('Conecta 4')
 game_over = False
 
@@ -303,4 +303,4 @@ while not game_over:
 
 	if game_over:
 		pygame.time.wait(1000)
-		sound.stop()
+		#sound.stop()
