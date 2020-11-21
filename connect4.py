@@ -26,15 +26,6 @@ WINDOW_LENGTH = 4
 pygame.init()
 pygame.mixer.init()
 
-row = input("Ingrese el numero de renglones (renglones por default 7): ")
-col = input("Ingrese el numero de columnas (columnas por default 6): ")
-
-row = int(row) if row else 7
-col = int(col) if col else 6
-
-ROW_COUNT = row
-COLUMN_COUNT = col
-
 def create_board():
 	return np.zeros((ROW_COUNT, COLUMN_COUNT)) # A board
 
@@ -246,21 +237,11 @@ height = (ROW_COUNT+1) * SQUARESIZE
 #            (width, height) to show the board only
 size = (width, height)
 
-if ROW_COUNT <= 5:
-	size = (850, height)
-
-size_font = 45
-
-if COLUMN_COUNT < 5 or ROW_COUNT < 5:
-	size_font = 45
-else:
-	size_font = 65
-
 RADIUS = int(SQUARESIZE/2 - 5)
 
 screen = pygame.display.set_mode(size)
 draw_board(board)
-myfont = pygame.font.SysFont("timesnewromanbold", size_font)
+myfont = pygame.font.SysFont("timesnewromanbold", 75)
 pygame.display.update()
 #-----------------------------
 
