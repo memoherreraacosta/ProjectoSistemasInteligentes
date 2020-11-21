@@ -3,6 +3,9 @@ import random
 import pygame
 import sys
 import math
+import threading
+import problema2
+
 
 YELLOW = (245,245,0)
 WHITE = (250,250,250)
@@ -243,6 +246,9 @@ screen = pygame.display.set_mode(size)
 draw_board(board)
 myfont = pygame.font.SysFont("timesnewromanbold", 75)
 pygame.display.update()
+
+x = threading.Thread(target=problema2.main)
+x.start()
 #-----------------------------
 
 turn = PLAYER
@@ -302,5 +308,6 @@ while not game_over:
 			turn = turn % 2
 
 	if game_over:
+		x.join()
 		pygame.time.wait(1000)
 		#sound.stop()
