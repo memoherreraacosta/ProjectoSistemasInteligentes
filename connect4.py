@@ -7,41 +7,26 @@ import threading
 import problema2
 
 
-YELLOW = (245,245,0)
-WHITE = (250,250,250)
-GRAY = (211,211,211)
-RED = (200,0,0)
-BLACK = (0,0,0)
-
-ROW_COUNT = 6
-COLUMN_COUNT = 7
-
-# Player number
-PLAYER = 0
-AI_MINIMAX = 1
-
-EMPTY = 0
-PLAYER_PIECE = 1
-
-AI_PIECE = 2
-WINDOW_LENGTH = 4
-
-pygame.init()
-pygame.mixer.init()
 
 def create_board():
 	return np.zeros((ROW_COUNT, COLUMN_COUNT)) # A board
 
+
 def drop_piece(board, row, col, piece):
 	board[row][col] = piece
+
 
 def is_valid_location(board, col):
 	return board[ROW_COUNT-1][col] == 0
 
+
 def get_next_open_row(board, col):
-	for r in range(ROW_COUNT):
-		if board[r][col] == 0:
-			return r
+	return next(
+		r
+		for r in range(ROW_COUNT)
+		if board[r][col] == 0
+	)
+
 
 def winning_move(board, piece):
 	# Check horizontal locations for win
@@ -77,6 +62,7 @@ def winning_move(board, piece):
 			  board[r-3][c+3] == piece):
 				return True
 
+
 def evaluate_window(window, piece):
 	score = 0
 	opp_piece = PLAYER_PIECE
@@ -91,6 +77,7 @@ def evaluate_window(window, piece):
 	if window.count(opp_piece) == 3 and window.count(EMPTY) == 1:
 		score -= 4
 	return score
+
 
 def score_position(board, piece):
 	score = 0
@@ -123,10 +110,12 @@ def score_position(board, piece):
 
 
 def is_terminal_node(board):
-	return (winning_move(board, PLAYER_PIECE) or
+	return (
+		winning_move(board, PLAYER_PIECE) or
 		winning_move(board, AI_PIECE) or
 		len(get_valid_locations(board)) == 0
 	)
+
 
 def minimax(board, depth, alpha, beta, maximizingPlayer):
 	valid_locations = get_valid_locations(board)
@@ -174,7 +163,9 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
 		return column, value
 
 def get_valid_locations(board):
-	return [col for col in range(COLUMN_COUNT)
+	return [
+		col
+		for col in range(COLUMN_COUNT)
 		if is_valid_location(board, col)
 	]
 
@@ -222,7 +213,33 @@ def draw_board(board):
 				)
 	pygame.display.update()
 
-#------- Init the game
+
+YELLOW = (245,245,0)
+WHITE = (250,250,250)
+GRAY = (211,211,211)
+RED = (200,0,0)
+BLACK = (0,0,0)
+
+ROW_COUNT = 6
+COLUMN_COUNT = 7
+
+# Player number
+PLAYER = 0
+AI_MINIMAX = 1
+
+EMPTY = 0
+PLAYER_PIECE = 1
+
+AI_PIECE = 2
+WINDOW_LENGTH = 4
+
+turn = PLAYER
+posx = 50
+
+#------- Init the game -------#
+pygame.init()
+pygame.mixer.init()
+
 board = create_board()
 #sound = pygame.mixer.Sound("./Chillout-downtempo-music-loop.mp3")
 #sound.play(-1)
@@ -249,11 +266,7 @@ pygame.display.update()
 
 x = threading.Thread(target=problema2.main)
 x.start()
-#-----------------------------
-
-turn = PLAYER
-
-posx = 50
+#-----------------------------#
 
 pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
 pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
