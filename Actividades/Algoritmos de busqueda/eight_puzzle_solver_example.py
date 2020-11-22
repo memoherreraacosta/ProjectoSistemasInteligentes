@@ -11,7 +11,7 @@
 #   Imports
 #------------------------------------------------------------------------------------------------------------------
 
-from simpleai.search import astar, SearchProblem
+from simpleai.search import astar, SearchProblem, breadth_first, depth_first
 import random
 
 #------------------------------------------------------------------------------------------------------------------
@@ -167,7 +167,7 @@ class EightPuzzleProblem(SearchProblem):
 
             ############## Heuristic function 1
             # Is the element in the right position?
-            #distance += int(row_current != row_goal or col_current != col_goal)
+            # distance += int(row_current != row_goal or col_current != col_goal)
             ##############
 
             ############## Heuristic function 2
@@ -183,6 +183,7 @@ class EightPuzzleProblem(SearchProblem):
 
 # Initialize board
 initial_board = randomMovements(string_to_list('e-1-2\n3-4-5\n6-7-8'), 1000)
+initial_board = string_to_list('8-6-e-9\n7-1-2-10\n4-3-5-14\n12-11-13-15')
 initial_state = list_to_string(initial_board)
 
 # Create solver object
@@ -194,9 +195,9 @@ for i, (action, state) in enumerate(result.path()):
     if action == None:
         print('Initial configuration')
     elif i == len(result.path()) - 1:
-        print('After moving', action, 'into the empty space. Goal achieved!')
+        print('Move: '+ str(i) +' After moving', action, 'into the empty space. Goal achieved!')
     else:
-        print('After moving', action, 'into the empty space')
+        print('Move: '+ str(i) + ' After moving', action, 'into the empty space')
 
     print(state)
 

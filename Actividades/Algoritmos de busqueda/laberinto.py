@@ -1,199 +1,206 @@
-class Node():
-    """A node class for A* Pathfinding"""
-    def __init__(self, parent=None, position=None):
-        self.parent = parent
-        self.position = position
+import math
+from simpleai.search import SearchProblem, astar
 
-        self.g = 0
-        self.h = 0
-        self.f = 0
+#------------------------------------------------------------------------------------------------------------------
+#   Problem definition
+#------------------------------------------------------------------------------------------------------------------
 
-    def __eq__(self, other):
-        return self.position == other.position
+# Class containing the methods to solve the maze
+class MazeSolver(SearchProblem):
+    # Initialize the class 
+    def __init__(self, board):
+        self.board = board
+        self.goal = (0, 0)
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                if self.board[y][x] == "O":
+                    self.initial = (x, y)
+                elif self.board[y][x] == "X":
+                    self.goal = (x, y)
+        super(MazeSolver, self).__init__(initial_state=self.initial)
 
+    # Define the method that takes actions
+    # to arrive at the solution
+    def actions(self, state):
+        actions = []
+        for action in COSTS.keys():
+            newx, newy = self.result(state, action)
+            if self.board[newy][newx] != "+":
+                actions.append(action)
+        return actions
 
-def astar(maze, start, end):
+    # Update the state based on the action
+    def result(self, state, action):
+        x, y = state
+        if action.count("up"):
+            y -= 1
+        if action.count("down"):
+            y += 1
+        if action.count("left"):
+            x -= 1
+        if action.count("right"):
+            x += 1
+        new_state = (x, y)
+        return new_state
+
+    # Check if we have reached the goal
+    def is_goal(self, state):
+        return state == self.goal
+
+    # Compute the cost of taking an action
+    def cost(self, state, action, state2):
+        return COSTS[action]
+
+    # Heuristic that we use to arrive at the solution
+    def heuristic(self, state):
+        x, y = state
+        gx, gy = self.goal
+        return math.sqrt((x - gx) ** 2 + (y - gy) ** 2)
+
+if __name__ == "__main__":
+    # Define the map
+    MAP = ["""
+++++++++++++++++++++++
++ O +   ++ ++        +
++     +     +++++++ ++
++ +    ++  ++++ +++ ++
++ +   + + ++         +
++          ++  ++  + +
++++++ + +      ++  + +
++++++ +++  + +  ++   +
++          + +  + +  +
++++++ +  + + +     X +
+++++++++++++++++++++++
+    """
+
     
-    # Create start and end node
-    start_node = Node(None, start)
-    start_node.g = start_node.h = start_node.f = 0
-    end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
+    ,"""
+++++++++++++++++++++++++++++++
++ O       +              +   +
++ ++++    ++++++++       +   +
++    +    +              +   +
++    +++     +++++  ++++++   +
++      +   +++   +           +
++      +     +   +  +  +   +++
++     +++++    +    +  + X   +
++              +       +     +
+++++++++++++++++++++++++++++++
+    """
 
-    # Initialize both open and closed list
-    open_list = []
-    closed_list = []
-
-    # Add the start node
-    open_list.append(start_node)
-
-    # Loop until you find the end
-    while len(open_list) > 0:
-        # Get the current node
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
-
-        # Pop current off open list, add to closed list
-        open_list.pop(current_index)
-        closed_list.append(current_node)
-
-        # Found the goal
-        if current_node == end_node:
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current.position)
-                current = current.parent
-            return path[::-1]  # Return reversed path
-
-        # Generate children
-        children = []
-        # Adjacent squares
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
-            # Get node position
-            node_position = (
-                current_node.position[0] + new_position[0],
-                current_node.position[1] + new_position[1]
-            )
-
-            # Make sure within range
-            if node_position[0] > (len(maze) - 1) \
-            or node_position[0] < 0 \
-            or node_position[1] > (len(maze[len(maze)-1]) - 1) \
-            or node_position[1] < 0:
-                continue
-
-            # Make sure walkable terrain
-            if maze[node_position[0]][node_position[1]] != 0:
-                continue
-
-            # Create new node
-            new_node = Node(current_node, node_position)
-
-            # Append
-            children.append(new_node)
-
-        # Loop through children
-        for child in children:
-            # Child is on the closed list
-            for closed_child in closed_list:
-                if child == closed_child:
-                    continue
-
-            # Create the f, g, and h values
-            child.g = current_node.g + 1
-            child.h = (
-                (child.position[0] - end_node.position[0]) ** 2
-            ) + (
-                (child.position[1] - end_node.position[1]) ** 2 
-            )
-
-            child.f = child.g + child.h
-
-            # Child is already in the open list
-            for open_node in open_list:
-                if child == open_node and child.g > open_node.g:
-                    continue
-
-            # Add the child to the open list
-            open_list.append(child)
-
-
-def convert_to_valid_line(str):
-    return [
-        int(i)
-        for i
-        in list(str.strip().replace(' ', '0').replace('+', '1').replace('O', '0').replace('X', '0'))
-    ]
-
-
-def get_maze_pos(maze):
-    start = None
-    end = None
-    for l_idx, line in enumerate(maze.splitlines()):
-        line = line.strip()
-        if "O" in line:
-            start = l_idx, line.find("O")
-        if "X" in line:
-            end = l_idx, line.find("X")
-        if start and end:
-            return start, end
-    return start, end
-
-
-def main():
-    maze_grahp1 = "\
-        ++++++++++++++++++++++\n\
-        + O +   ++ ++        +\n\
-        +     +     +++++++ ++\n\
-        + +    ++  ++++ +++ ++\n\
-        + +   + + ++         +\n\
-        +          ++  ++  + +\n\
-        +++++ + +      ++  + +\n\
-        +++++ +++  + +  ++   +\n\
-        +          + +  + +  +\n\
-        +++++ +  + + +     X +\n\
-        ++++++++++++++++++++++\
-    "
-
-    maze_grahp2 = "\
-        ++++++++++++++++++++++\n\
-        +   +   ++ ++        +\n\
-        +     +     +++++++ ++\n\
-        + +    ++  ++++ +++ ++\n\
-        + +   +O+ ++         +\n\
-        +          ++  ++  + +\n\
-        +++++ + +      ++  + +\n\
-        +++++ +++  + +  ++   +\n\
-        +          + +  + +  +\n\
-        +++++ +  + + +     X +\n\
-        ++++++++++++++++++++++\
-    "
-
-    maze_grahp3 = "\
-        ++++++++++++++++++++++\n\
-        +   +   ++         O +\n\
-        +     +     +++++++ ++\n\
-        + +    ++  ++++ +++ ++\n\
-        + +   + + ++         +\n\
-        +          ++  ++  + +\n\
-        +++++ + +      ++  + +\n\
-        +++++ +++  + +  ++   +\n\
-        +          + +  + +  +\n\
-        +++++ +  + + +     X +\n\
-        ++++++++++++++++++++++\
-    "
-
-    maze_grahp4 = "\
-        ++++++++++++++++++++++\n\
-        +   +X  ++           +\n\
-        +     +     +++++++ ++\n\
-        + +    ++  ++++ +++ ++\n\
-        + +   + + ++         +\n\
-        +          ++  ++  + +\n\
-        +++++ + +      ++  + +\n\
-        +++++ +++  + +  ++   +\n\
-        +O         + +  + +  +\n\
-        +++++ +  + + +       +\n\
-        ++++++++++++++++++++++\
-    "
-
-    mazes = [maze_grahp1, maze_grahp2, maze_grahp3, maze_grahp4]
  
-    for maze in mazes:
-        ready_maze = [
-            convert_to_valid_line(line)
-            for line in maze.splitlines()
-        ]
+    ,"""
+++++++++++++++++++++++++++++++
++         +              +   +
++ ++++    ++++++++       +   +
++  O +    +              +   +
++    +++     +++++  ++++++   +
++      +   +++   +           +
++      +     +   +  +  +   +++
++     +++++    +    +  + X   +
++              +       +     +
+++++++++++++++++++++++++++++++
+    """
 
-        start, end = get_maze_pos(maze)
-        path = astar(ready_maze, start, end)
-        print(path)
+    ,"""
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++O                       +                  +      +     + + +  +  +   +++++++++++++++  ++
++  +++    ++++++++       +                  +      +     + + +  +  +   +++++++++++++++  ++
++  + +    +              +                  +      +     + + +  +  +   +++++++++++++++  ++
++    +++     +++++ +++++++                  +      +     + + +  +  +   +++++++++++++++  ++
++      +   ++++                             +      +     + + +  +  +   +++++++++++++++  ++
++      +     + + +  +  +   +++++++++++++++  ++  ++          + +           +              +
++     +++++        ++  + + + +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++ + + + + + + + + + + + +  +++++++++++++++ ++ + + + + + + + + + + + +  +++++++++++++++ +++
++  ++          + +           ++++++++++++ +++ + + + + + + + + + + + +  +++++++++++++++ +++
++  ++          + +           +++++++++++++  + + + + + + + + + + + + +  +++++++++++++++ +++
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  +++    ++++++++       +                  ++  ++          + +           +              +
++  + +    +              +                  ++  ++          + +           +              +
++    +++     +++++ +++++++                         +    +++     +++++ +++++++  +++++++++++
++      +   ++++                             ++  ++          + +           +              +
++      +     + + +  +  +   +++++++++++++++  ++  ++          + +           +              +
++     +++++        ++  + + + +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++ + + + + + + + + + + + +  +++++++++++++++ +++  ++          + +           +              +
++  ++          + +           ++++++++++++ ++++  ++          + +           +              +
++  ++          + +           +++++++++++++  ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  ++          + +           +              ++  ++          + +           +              +
++  +++    ++++++++       +                  ++  ++          + +           +              +
++  + +    +              +                  ++  ++          + +           +              +
++    +++     +++++ +++++++                  ++  ++          + +           +              +
++      +   ++++                             ++  ++          + +           +              +
++      +     + + +  +  +   +++++++++++++++  ++    +++     +++++ +++++++                  +
++     +++++        ++  + + + +              ++    +++     +++++ +++++++                  +
++  ++          + +           +              ++ + + + + + + + + + + + +  +++++++++++++++ ++
++ + + + + + + + + + + + +  +++++++++++++++ +++ + + + + + + + + + + + +  +++++++++++++++ ++
++  ++          + +           ++++++++++++ ++++ + + + + + + + + + + + +  +++++++++++++++ ++
++  ++          + +           +++++++++++++  ++  ++          + +           +++++++++++++  +
++  ++          + +           +              ++  ++          + +           +++++++++++++  +
++  ++          + +           +              ++  ++          + +           +++++++++++++  +
++  ++          + +           +              ++  ++          + +           +++++++++++++  +
++  ++          + +           +              ++  ++          + +           +++++++++++++  +
++  ++          + +           +              ++  ++          + +           +++++++++++++  +
++  ++          + +           +              ++  ++          + +           +++++++++++++  +
++  ++          + +           +              ++  ++          + +     X     +++++++++++++  +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    """]
 
+    for map in MAP: 
+        # Convert map to a list
+        print("------MAP------")
+        print(map)
+        map = [list(x) for x in map.split("\n") if x]
 
-if __name__ == '__main__':
-    main()
+        # Define cost of moving around the map
+        cost_regular = 1.0
+        cost_diagonal = 1.7
+
+        # Create the cost dictionary
+        COSTS = {
+            "up": cost_regular,
+            "down": cost_regular,
+            "left": cost_regular,
+            "right": cost_regular,
+            "up left": cost_diagonal,
+            "up right": cost_diagonal,
+            "down left": cost_diagonal,
+            "down right": cost_diagonal,
+        }
+
+        # Create maze solver object
+        problem = MazeSolver(map)
+
+        # Run the solver
+        result = astar(problem, graph_search=True)
+
+        # Extract the path
+        path = [x[1] for x in result.path()]
+        print("--Solution--")
+        print()
+        # Print the steps and coordinate path as string
+        print(result.path())
+        # Print the map
+        print()
+        for y in range(len(map)):
+            for x in range(len(map[y])):
+                if (x, y) == problem.initial:
+                    print('O', end='')
+                elif (x, y) == problem.goal:
+                    print('X', end='')
+                elif (x, y) in path:
+                    print('*', end='')
+                else:
+                    print(map[y][x], end='')
+
+            print()

@@ -1,6 +1,6 @@
-#------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------
 #   Sample program for data acquisition and recording.
-#------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------
 import time
 import socket
 import numpy as np
@@ -8,14 +8,18 @@ from matplotlib.mlab import psd
 from glob import glob
 from sklearn import svm
 from sklearn.metrics import confusion_matrix
+from pynput.keyboard import Key, Controller
 
 
 def main():
+    #Keyboard
+    keyboard = Controller()
+    l_key_pressed = False
+    n_key_pressed = False
 
     # Data configuration
     n_channels = 5
     samp_rate = 256
-    emg_data = [[] for i in range(n_channels)]
     samp_count = 0
     win_size = 256
     file = 3
@@ -24,9 +28,12 @@ def main():
     clf = training(file, win_size, samp_rate)
 
     # Socket configuration
-    UDP_IP = '127.0.0.1'
+    UDP_IP = "127.0.0.1"
     UDP_PORT = 8000
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock = socket.socket(
+        socket.AF_INET,
+        socket.SOCK_DGRAM
+    )
     sock.bind((UDP_IP, UDP_PORT))
     sock.settimeout(0.01)
 
@@ -43,6 +50,7 @@ def main():
             samp_count+=ns
             ps+=ns
 
+            emg_data = [[] for _ in range(n_channels)]
             for i in range(ns):
                 for j in range(n_channels):
                     emg_data[j].append(values[n_channels*i + j])
@@ -59,13 +67,23 @@ def main():
                 powers.extend(power1[start_index:end_index])
                 power2, freq2 = psd(window_data[2], NFFT = win_size, Fs = samp_rate)
                 powers.extend(power2[start_index:end_index])
-                pred = clf.predict([powers])
-
+                pred = int(clf.predict([powers])[0])
 
                 print("Prediccion: ", pred)
                 # print ("Muestras: ", ps)
                 # print ("Cuenta: ", samp_count)
                 print("")
+                if(pred == 0 and not l_key_pressed):
+                    l_key_pressed = True
+                    keyboard.press(Key.right)
+                    keyboard.release(Key.right)
+                elif(pred == 2):
+                    l_key_pressed = False
+                    n_key_pressed = False
+                elif(pred == 1 and not n_key_pressed):
+                    n_key_pressed = True
+                    keyboard.press(Key.down)
+                    keyboard.release(Key.down)
                 ps = 0
         except socket.timeout:
             pass
