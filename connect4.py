@@ -1,10 +1,9 @@
-import numpy as np
 import random
 import pygame
-import sys
 import math
 import threading
 import problema2
+import numpy as np
 
 
 
@@ -169,6 +168,7 @@ def get_valid_locations(board):
 		if is_valid_location(board, col)
 	]
 
+
 def pick_best_move(board, piece):
 	valid_locations = get_valid_locations(board)
 	best_score = -10000
@@ -182,6 +182,7 @@ def pick_best_move(board, piece):
 			best_score = score
 			best_col = col
 	return best_col
+
 
 def draw_board(board):
 	for c in range(COLUMN_COUNT):
@@ -232,49 +233,44 @@ PLAYER_PIECE = 1
 
 AI_PIECE = 2
 WINDOW_LENGTH = 4
-
+# Initial turn player
 turn = PLAYER
+# Initial coin position
 posx = 50
+# Size for the window
+SQUARESIZE = 100
+width = COLUMN_COUNT * SQUARESIZE
+height = (ROW_COUNT+1) * SQUARESIZE
+# Change to: (1200, 700) to split the game view
+#            (width, height) to show the board only
+size = (width, height)
+RADIUS = int(SQUARESIZE/2 - 5)
+
 
 #------- Init the game -------#
 pygame.init()
 pygame.mixer.init()
-
-board = create_board()
+game_over = False
+pygame.display.set_caption('Conecta 4')
 #sound = pygame.mixer.Sound("./Chillout-downtempo-music-loop.mp3")
 #sound.play(-1)
 #sound.set_volume(0.30)
-pygame.display.set_caption('Conecta 4')
-game_over = False
-
-# Size for the window
-SQUARESIZE = 100
-
-width = COLUMN_COUNT * SQUARESIZE
-height = (ROW_COUNT+1) * SQUARESIZE
-
-# Change to: (1200, 700) to split the game view
-#            (width, height) to show the board only
-size = (width, height)
-
-RADIUS = int(SQUARESIZE/2 - 5)
 
 screen = pygame.display.set_mode(size)
-draw_board(board)
 myfont = pygame.font.SysFont("timesnewromanbold", 75)
-pygame.display.update()
-
-x = threading.Thread(target=problema2.main)
-x.start()
-#-----------------------------#
-
 pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
 pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
+pygame.display.update()
+board = create_board()
+draw_board(board)
+
+#thread_problema2 = threading.Thread(target=problema2.main)
+#thread_problema2.start()
 
 while not game_over:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
-			sys.exit()
+			pygame.quit()
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_LEFT:
 				pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
@@ -321,6 +317,6 @@ while not game_over:
 			turn = turn % 2
 
 	if game_over:
-		x.join()
-		pygame.time.wait(1000)
+		#thread_problema2.join()
 		#sound.stop()
+		pygame.quit()

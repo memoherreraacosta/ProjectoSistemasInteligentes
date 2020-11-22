@@ -1,6 +1,6 @@
-#------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------
 #   Sample program for data acquisition and recording.
-#------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------
 import time
 import socket
 import numpy as np
@@ -20,7 +20,6 @@ def main():
     # Data configuration
     n_channels = 5
     samp_rate = 256
-    emg_data = [[] for i in range(n_channels)]
     samp_count = 0
     win_size = 256
     file = 3
@@ -29,9 +28,12 @@ def main():
     clf = training(file, win_size, samp_rate)
 
     # Socket configuration
-    UDP_IP = '127.0.0.1'
+    UDP_IP = "127.0.0.1"
     UDP_PORT = 8000
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock = socket.socket(
+        socket.AF_INET,
+        socket.SOCK_DGRAM
+    )
     sock.bind((UDP_IP, UDP_PORT))
     sock.settimeout(0.01)
 
@@ -48,6 +50,7 @@ def main():
             samp_count+=ns
             ps+=ns
 
+            emg_data = [[] for _ in range(n_channels)]
             for i in range(ns):
                 for j in range(n_channels):
                     emg_data[j].append(values[n_channels*i + j])
@@ -65,7 +68,6 @@ def main():
                 power2, freq2 = psd(window_data[2], NFFT = win_size, Fs = samp_rate)
                 powers.extend(power2[start_index:end_index])
                 pred = int(clf.predict([powers])[0])
-
 
                 print("Prediccion: ", pred)
                 # print ("Muestras: ", ps)
