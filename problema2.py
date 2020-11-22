@@ -90,7 +90,7 @@ def main():
 
 def preprocessing(file, win_size, samp_rate):
     # Construir X y Y
-    files = glob("data/*")
+    files = glob("data/proyecto_data/*")
     data = np.loadtxt(files[file])
 
     samps = data.shape[0]

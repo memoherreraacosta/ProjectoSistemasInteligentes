@@ -21,7 +21,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 
 # Construir X y Y
-files = glob("data/*")
+files = glob("data/proyecto_data/*")
 data = np.loadtxt(files[0])
 
 win_size = 256 # 1 seg
