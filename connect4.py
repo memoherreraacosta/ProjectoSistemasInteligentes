@@ -1,7 +1,7 @@
+import sys
 import math
 import random
 import pygame
-import asyncio
 import threading
 import problema2
 import numpy as np
@@ -268,10 +268,13 @@ board = create_board()
 draw_board(board)
 
 # Run problema2
+# Make the main thread a deamon, if the current
+# process is over (by a sys.exit() signal, for example)
+# the current process and its deamon will be temrinated
+# all the thread's childs will be terminated too
 thread_problema2 = threading.Thread(target=problema2.main)
+thread_problema2.daemon = True
 thread_problema2.start()
-#with problema2.main() as corutine:
-#	asyncio.run(corutine())
 
 while not game_over:
 	for event in pygame.event.get():
@@ -324,6 +327,6 @@ while not game_over:
 
 	if game_over:
 		#sound.stop()
-		thread_problema2.join()
 		sleep(5)
 		pygame.quit()
+		sys.exit()
