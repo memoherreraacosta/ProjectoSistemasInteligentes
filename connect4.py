@@ -1,9 +1,11 @@
+import math
 import random
 import pygame
-import math
+import asyncio
 import threading
 import problema2
 import numpy as np
+from time import sleep
 
 
 
@@ -161,6 +163,7 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
 				break
 		return column, value
 
+
 def get_valid_locations(board):
 	return [
 		col
@@ -264,8 +267,11 @@ pygame.display.update()
 board = create_board()
 draw_board(board)
 
-#thread_problema2 = threading.Thread(target=problema2.main)
-#thread_problema2.start()
+# Run problema2
+thread_problema2 = threading.Thread(target=problema2.main)
+thread_problema2.start()
+#with problema2.main() as corutine:
+#	asyncio.run(corutine())
 
 while not game_over:
 	for event in pygame.event.get():
@@ -292,7 +298,7 @@ while not game_over:
 						row = get_next_open_row(board, col)
 						drop_piece(board, row, col, PLAYER_PIECE)
 						if winning_move(board, PLAYER_PIECE):
-							label = myfont.render("Human Wins!!", True, RED)
+							label = myfont.render("You won!!", True, RED)
 							screen.blit(label, (20,20))
 							game_over = True
 						turn += 1
@@ -308,7 +314,7 @@ while not game_over:
 			if winning_move(board, AI_PIECE):
 				draw_board(board)
 				pygame.draw.rect(screen, WHITE, (0,0, width, SQUARESIZE))
-				label = myfont.render("AI MiniMax wins!!", True, BLACK)
+				label = myfont.render("AI MiniMax won!!!!", True, BLACK)
 				screen.blit(label, (20,20))
 				game_over = True
 
@@ -317,6 +323,7 @@ while not game_over:
 			turn = turn % 2
 
 	if game_over:
-		#thread_problema2.join()
 		#sound.stop()
+		thread_problema2.join()
+		sleep(5)
 		pygame.quit()
