@@ -22,10 +22,10 @@ def main():
     samp_rate = 256
     samp_count = 0
     win_size = 256
-    file = 3
+    _file = 0
 
     # data training
-    clf = training(file, win_size, samp_rate)
+    clf = training(_file, win_size, samp_rate)
 
     # Socket configuration
     UDP_IP = "127.0.0.1"
@@ -88,10 +88,10 @@ def main():
         except socket.timeout:
             pass
 
-def preprocessing(file, win_size, samp_rate):
+def preprocessing(_file, win_size, samp_rate):
     # Construir X y Y
     files = glob("data/proyecto_data/*")
-    data = np.loadtxt(files[file])
+    data = np.loadtxt(files[_file])
 
     samps = data.shape[0]
 
@@ -135,9 +135,10 @@ def preprocessing(file, win_size, samp_rate):
     return x, y
 
 
-def training(file, win_size, samp_rate):
-    x_train, y_train = preprocessing(file, win_size, samp_rate)
-    x_test, y_test = preprocessing(file+1, win_size, samp_rate)
+def training(_file, win_size, samp_rate):
+    x_train, y_train = preprocessing(_file, win_size, samp_rate)
+    # TODO, cahge to _file+1 once there are multiple files
+    x_test, y_test = preprocessing(_file, win_size, samp_rate)
 
     # 5-fold cross-validation
     # Evaluate model SVM linear
