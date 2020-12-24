@@ -2,12 +2,13 @@
 This module implements the Player (Human or AI), which is basically an
 object with an ``ask_move(game)`` method
 """
+import time
+
 try:
     input = raw_input
 except NameError:
     pass
 
-import time
 
 class Human_Player:
     """
@@ -20,8 +21,8 @@ class Human_Player:
         self.name = name
         self.clasificador = clasificador
 
-    def ask_move(self, game):
 
+    def ask_move(self, game):
         # 101 = Flexionando a la izquierda, 102 = Flexionando a la derecha, 103  = Mano cerrada
         initial_option = 0
         possible_moves = game.possible_moves()
